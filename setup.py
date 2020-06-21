@@ -68,8 +68,9 @@ def get_extensions():
 
         # It's better if pytorch can do this by default ..
         CC = os.environ.get("CC", None)
-        if CC is not None:
-            extra_compile_args["nvcc"].append("-ccbin={}".format(CC))
+        #Commented for SOSCIP account will add back later
+        # if CC is not None:
+        #     extra_compile_args["nvcc"].append("-ccbin={}".format(CC))
 
     include_dirs = [extensions_dir]
 
