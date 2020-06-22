@@ -469,13 +469,35 @@ class FastRCNNOutputs(object):
         """
         Compute the default losses for box head in Fast(er) R-CNN,
         with softmax cross entropy loss and smooth L1 loss.
+
         Returns:
             A dict of losses (scalar tensors) containing keys "loss_cls" and "loss_box_reg".
         """
-        return {
-            "loss_cls": self.softmax_cross_entropy_loss(),
-            "loss_box_reg": self.smooth_l1_loss(),
+
+        losses_dict = {
+            "loss_cls": self.softmax_cross_entropy_loss()
         }
+        # return {"loss_cls": self.softmax_cross_entropy_loss(), "loss_box_reg": self.box_reg_loss()}
+
+        #Will need to improve the configuration part
+        reg_loss = self.cfg.MODEL.ROI_BOX_HEAD.LOSS
+
+        if reg_loss == "diou":
+            losses_dict["loss_box_reg"] = self.compute_diou()
+            # losses_dict["loss_box_reg"] = self.compute_diou_fvcore()
+        elif reg_loss == "ciou":
+            losses_dict["loss_box_reg"] = self.compute_ciou()
+        # elif reg_loss == "giou":
+        #     losses_dict["loss_box_reg"] = self.compute_giou_fvcore()
+        else:
+            losses_dict["loss_box_reg"] = self.smooth_l1_loss()
+
+        # return {
+        #     "loss_cls": self.softmax_cross_entropy_loss(),
+        #     "loss_box_reg": self.smooth_l1_loss()
+        # }
+
+        return losses_dict
 
     def predict_boxes(self):
         """
