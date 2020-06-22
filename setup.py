@@ -137,7 +137,8 @@ setup(
         "matplotlib",
         "tqdm>4.29.0",
         "tensorboard",
-        "fvcore==0.1.dev200407",
+        "fvcore>=0.1.1",
+        "pycocotools>=2.0",  #Using my version for now. Will change later. Johan
         "future",  # used by caffe2
         "pydot",  # used to save caffe2 SVGs
     ],

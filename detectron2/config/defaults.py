@@ -235,6 +235,16 @@ _C.MODEL.RPN.POST_NMS_TOPK_TEST = 1000
 # NMS threshold used on RPN proposals
 _C.MODEL.RPN.NMS_THRESH = 0.7
 
+#RPN loss modication by Johan:
+#Type of BBOX loss for RPN. Default is sl1
+#Possible to change to diou
+_C.MODEL.RPN_LOSS_TYPE = "sl1"
+#Weight for BBOX loss
+_C.MODEL.RPN_LOSS_BBOX_WEIGHT = 1.
+#NMS type for RPN
+#Options are nms, diou_nms
+_C.MODEL.RPN.NMS_TYPE = "nms"
+
 # ---------------------------------------------------------------------------- #
 # ROI HEADS options
 # ---------------------------------------------------------------------------- #
@@ -304,6 +314,17 @@ _C.MODEL.ROI_BOX_HEAD.NORM = ""
 _C.MODEL.ROI_BOX_HEAD.CLS_AGNOSTIC_BBOX_REG = False
 # If true, RoI heads use bounding boxes predicted by the box head rather than proposal boxes.
 _C.MODEL.ROI_BOX_HEAD.TRAIN_ON_PRED_BOXES = False
+
+#Loss Box weight for IOU loss functions : Johan
+#Default is 1 for L1 and 12 for IOU functions
+_C.MODEL.ROI_BOX_HEAD.LOSS_BOX_WEIGHT = 1
+
+#Choices between losses for box heads : Johan
+#Default is sl1, others are diou and ciou
+_C.MODEL.ROI_BOX_HEAD.LOSS = "sl1"
+#NMS type for ROI Head
+#Options are nms, diou_nms
+_C.MODEL.ROI_BOX_HEAD.NMS_TYPE = "nms"
 
 # ---------------------------------------------------------------------------- #
 # Cascaded Box Head
