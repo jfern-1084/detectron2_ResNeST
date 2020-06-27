@@ -5,6 +5,7 @@ from torch import nn
 
 from .batch_norm import FrozenBatchNorm2d
 
+# from IPython.core.debugger import set_trace
 
 class CNNBlockBase(nn.Module):
     """

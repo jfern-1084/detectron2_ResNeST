@@ -17,6 +17,8 @@ from detectron2.layers import (
 from .backbone import Backbone
 from .build import BACKBONE_REGISTRY
 
+# from IPython.core.debugger import set_trace
+
 __all__ = [
     "ResNetBlockBase",
     "BasicBlock",
@@ -439,22 +441,25 @@ class DeformBottleneckBlock(CNNBlockBase):
 #
 # <<<<<<< HEAD
 
-class BasicStem(nn.Module):
+class BasicStem(CNNBlockBase):
     def __init__(self, in_channels=3, out_channels=64, norm="BN",
                  deep_stem=False, stem_width=32):
-# =======
-#     def __init__(self, in_channels=3, out_channels=64, norm="BN"):
-# >>>>>>> 6b6adb009cc159286bcc5e5144a13fb6f985844f
         """
         Args:
             norm (str or callable): norm after the first conv layer.
                 See :func:`layers.get_norm` for supported format.
+            deep_stem (Boolean): Whether to use ResNeST (True) or ResNet (False)
+            stem_width (int): Used by ResNeST in place of in_channels and out_channels
         """
-# <<<<<<< HEAD
-        super().__init__()
+
         self.deep_stem = deep_stem
 
         if self.deep_stem:
+            #ResNeST uses nn.Module directly rather thn CNNBlockBase. : J
+            #Hence this line is added here. Will look for a better way a little later : J
+            #Cannot use get_norm if Module is not initialized.
+            nn.Module().__init__(self)
+
             self.conv1_1 = Conv2d(3, stem_width, kernel_size=3, stride=2, 
                                   padding=1, bias=False,
                                   norm=get_norm(norm, stem_width),
@@ -470,7 +475,17 @@ class BasicStem(nn.Module):
             for layer in [self.conv1_1, self.conv1_2, self.conv1_3]:
                 if layer is not None:  
                     weight_init.c2_msra_fill(layer)
+
+            #As parameterized by original code : J
+            self.in_channels = 3
+            self.out_channels = self.conv1_3.out_channels
+            self.stride = 4
+
         else:
+            #This is the original ResNet code as is. : J
+            #All BasicStem attributes for ResNet are set here and not above
+            super().__init__(in_channels, out_channels, 4)
+            self.in_channels = in_channels
             self.conv1 = Conv2d(
                 in_channels,
                 out_channels,
@@ -481,20 +496,6 @@ class BasicStem(nn.Module):
                 norm=get_norm(norm, out_channels),
             )
             weight_init.c2_msra_fill(self.conv1)
-# =======
-#         super().__init__(in_channels, out_channels, 4)
-#         self.in_channels = in_channels
-#         self.conv1 = Conv2d(
-#             in_channels,
-#             out_channels,
-#             kernel_size=7,
-#             stride=2,
-#             padding=3,
-#             bias=False,
-#             norm=get_norm(norm, out_channels),
-#         )
-#         weight_init.c2_msra_fill(self.conv1)
-# >>>>>>> 6b6adb009cc159286bcc5e5144a13fb6f985844f
 
     def forward(self, x):
         if self.deep_stem:
@@ -510,20 +511,20 @@ class BasicStem(nn.Module):
         x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
         return x
 
-# <<<<<<< HEAD
-    @property
-    def out_channels(self):
-        if self.deep_stem:
-            return self.conv1_3.out_channels
-        else:
-            return self.conv1.out_channels
+#These properties are only used by ResNeST.
+#To make the code adaptable for CNNBaseBlock they have been commented.
+#The values are manually set in the ResNeST condition above.
+#     @property
+#     def out_channels(self):
+#         if self.deep_stem:
+#             return self.conv1_3.out_channels
+#         else:
+#             return self.conv1.out_channels
+#
+#     @property
+#     def stride(self):
+#         return 4  # = stride 2 conv -> stride 2 max pool
 
-    @property
-    def stride(self):
-        return 4  # = stride 2 conv -> stride 2 max pool
-
-# =======
-# >>>>>>> 6b6adb009cc159286bcc5e5144a13fb6f985844f
 
 class ResNet(Backbone):
     """
