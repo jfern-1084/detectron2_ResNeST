@@ -22,7 +22,7 @@ This file contains functions to parse COCO-format annotations into dicts in "Det
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["load_coco_json", "load_sem_seg"]
+__all__ = ["load_coco_json", "load_sem_seg", "convert_to_coco_json"]
 
 
 def load_coco_json(json_file, image_root, dataset_name=None, extra_annotation_keys=None):
@@ -185,10 +185,11 @@ Category ids in annotations are not in [1, #categories]! We'll apply a mapping f
 
     if num_instances_without_valid_segmentation > 0:
         logger.warning(
-            "Filtered out {} instances without valid segmentation. "
-            "There might be issues in your dataset generation process.".format(
+            "Filtered out {} instances without valid segmentation. ".format(
                 num_instances_without_valid_segmentation
             )
+            + "There might be issues in your dataset generation process. "
+            "A valid polygon should be a list[float] with even length >= 6."
         )
     return dataset_dicts
 
@@ -336,7 +337,7 @@ def convert_to_coco_dict(dataset_name):
                     polygons = PolygonMasks([segmentation])
                     area = polygons.area()[0].item()
                 elif isinstance(segmentation, dict):  # RLE
-                    area = mask_util.area(segmentation)
+                    area = mask_util.area(segmentation).item()
                 else:
                     raise TypeError(f"Unknown segmentation type {type(segmentation)}!")
             else:
@@ -364,7 +365,7 @@ def convert_to_coco_dict(dataset_name):
             coco_annotation["id"] = len(coco_annotations) + 1
             coco_annotation["image_id"] = coco_image["id"]
             coco_annotation["bbox"] = [round(float(x), 3) for x in bbox]
-            coco_annotation["area"] = area
+            coco_annotation["area"] = float(area)
             coco_annotation["iscrowd"] = annotation.get("iscrowd", 0)
             coco_annotation["category_id"] = reverse_id_mapper(annotation["category_id"])
 
@@ -375,12 +376,16 @@ def convert_to_coco_dict(dataset_name):
 
             if "segmentation" in annotation:
                 coco_annotation["segmentation"] = annotation["segmentation"]
+                if isinstance(coco_annotation["segmentation"], dict):  # RLE
+                    coco_annotation["segmentation"]["counts"] = coco_annotation["segmentation"][
+                        "counts"
+                    ].decode("ascii")
 
             coco_annotations.append(coco_annotation)
 
     logger.info(
         "Conversion finished, "
-        f"num images: {len(coco_images)}, num annotations: {len(coco_annotations)}"
+        f"#images: {len(coco_images)}, #annotations: {len(coco_annotations)}"
     )
 
     info = {

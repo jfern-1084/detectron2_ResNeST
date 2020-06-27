@@ -5,8 +5,13 @@ import torch
 from torchvision.ops import boxes as box_ops
 from torchvision.ops import nms  # BC-compat
 
+#NMS and Soft-NMS
+# from detectron2.layers import cython_nms
+# from detectron2.config import global_cfg
 
-def batched_nms(boxes, scores, idxs, iou_threshold):
+def batched_nms(
+    boxes: torch.Tensor, scores: torch.Tensor, idxs: torch.Tensor, iou_threshold: float
+):
     """
     Same as torchvision.ops.boxes.batched_nms, but safer.
     """
@@ -24,6 +29,29 @@ def batched_nms(boxes, scores, idxs, iou_threshold):
     keep = result_mask.nonzero().view(-1)
     keep = keep[scores[keep].argsort(descending=True)]
     return keep
+
+#Work in progress!
+# Deprecated for now due to move to SOCIP.
+# Removed form __init__ as well. Add it when it is possible.
+# pyd and so files of cython_nms are available on github repo for now
+
+# def batched_diou_nms(boxes, scores, idxs, iou_threshold):
+#     #Added by Johan for experimenting with soft_nms
+#     #Replace this code with cuda code once available
+#     assert boxes.shape[-1] == 4
+#
+#     device = global_cfg.MODEL.DEVICE
+#     result_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
+#     for id in torch.unique(idxs).cpu().tolist():
+#         mask = (idxs == id).nonzero().view(-1)
+#         dets = torch.cat((boxes[mask], scores[mask].view(-1, 1)), 1)
+#         # _, indices = cython_nms.soft_nms(dets.cpu().numpy())
+#         indices = cython_nms.diounms(dets.cpu().numpy(), iou_threshold, 0.9)
+#         keep = torch.tensor(indices, device=device)
+#         result_mask[mask[keep]] = True
+#     keep = result_mask.nonzero().view(-1)
+#     keep = keep[scores[keep].argsort(descending=True)]
+#     return keep
 
 
 # Note: this function (nms_rotated) might be moved into
@@ -137,7 +165,7 @@ def batched_nms_rotated(boxes, scores, idxs, iou_threshold):
         torch.max(boxes[:, 0], boxes[:, 1]) + torch.max(boxes[:, 2], boxes[:, 3]) / 2
     ).max()
     min_coordinate = (
-        torch.min(boxes[:, 0], boxes[:, 1]) - torch.min(boxes[:, 2], boxes[:, 3]) / 2
+        torch.min(boxes[:, 0], boxes[:, 1]) - torch.max(boxes[:, 2], boxes[:, 3]) / 2
     ).min()
     offsets = idxs.to(boxes) * (max_coordinate - min_coordinate + 1)
     boxes_for_nms = boxes.clone()  # avoid modifying the original values in boxes

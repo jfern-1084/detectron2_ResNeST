@@ -44,3 +44,10 @@ wheels/
 /datasets
 /projects/*/datasets
 /models
+
+
+
+# Updated by Johan
+/detectron2/layers/cython_nms.c
+/detectron2/layers/cython_nms.cp37-win_amd64.pyd
+/detectron2/layers/cython_nms.cpython-36m-x86_64-linux-gnu.so
