@@ -458,7 +458,7 @@ class BasicStem(CNNBlockBase):
             #ResNeST uses nn.Module directly rather thn CNNBlockBase. : J
             #Hence this line is added here. Will look for a better way a little later : J
             #Cannot use get_norm if Module is not initialized.
-            nn.Module().__init__(self)
+            nn.Module.__init__(self)
 
             self.conv1_1 = Conv2d(3, stem_width, kernel_size=3, stride=2, 
                                   padding=1, bias=False,
