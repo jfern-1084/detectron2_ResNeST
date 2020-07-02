@@ -181,8 +181,9 @@ class BottleneckBlock(CNNBlockBase):
         )
 
         if self.radix>1:
-            from .splat import SplAtConv2d
-            self.conv2 = SplAtConv2d(
+            # from .splat import SplAtConv2d
+            from .split_attn import SplitAttnConv2d
+            self.conv2 = SplitAttnConv2d(
                             group_width, group_width, kernel_size=3, 
                             stride = 1 if self.avd else stride_3x3,
                             padding=dilation, dilation=dilation, 
