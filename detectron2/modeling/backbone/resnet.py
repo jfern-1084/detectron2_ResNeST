@@ -12,6 +12,7 @@ from detectron2.layers import (
     ModulatedDeformConv,
     ShapeSpec,
     get_norm,
+    get_norm_layer,
 )
 
 from .backbone import Backbone
@@ -197,7 +198,7 @@ class BottleneckBlock(CNNBlockBase):
                             padding=dilation, dilation=dilation,
                             groups=cardinality, bias=False,
                             radix=self.radix,
-                            norm_layer=norm,
+                            norm_layer=get_norm_layer(norm),
                          )
         else:
             self.conv2 = Conv2d(
@@ -442,13 +443,6 @@ class DeformBottleneckBlock(CNNBlockBase):
         out = F.relu_(out)
         return out
 
-
-# class BasicStem(CNNBlockBase):
-#     """
-#     The standard ResNet stem (layers before the first residual block).
-#     """
-#
-# <<<<<<< HEAD
 
 class BasicStem(CNNBlockBase):
     def __init__(self, in_channels=3, out_channels=64, norm="BN",

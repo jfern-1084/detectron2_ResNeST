@@ -15,6 +15,8 @@ from detectron2.layers import (
     get_norm,
 )
 
+# from IPython.core.debugger import set_trace
+
 __all__ = ['SplAtConv2d', 'SplAtConv2d_dcn']
 
 class SplAtConv2d(Module):

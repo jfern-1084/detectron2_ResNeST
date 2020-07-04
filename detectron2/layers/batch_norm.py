@@ -149,6 +149,34 @@ def get_norm(norm, out_channels):
         }[norm]
     return norm(out_channels)
 
+### ------ Additional feature to simply get the nn.<Norm class> for ResNest : J
+def get_norm_layer(norm):
+    """
+    Args:
+        norm (str or callable): either one of BN, SyncBN, FrozenBN, GN;
+            or a callable that takes a channel number and returns
+            the normalization layer as a nn.Module.
+
+    Returns:
+        nn.Module without initialization
+    """
+    if isinstance(norm, str):
+        if len(norm) == 0:
+            return None
+        norm = {
+            "BN": BatchNorm2d,
+            # Fixed in https://github.com/pytorch/pytorch/pull/36382
+            "SyncBN": NaiveSyncBatchNorm if env.TORCH_VERSION <= (1, 5) else nn.SyncBatchNorm,
+            "FrozenBN": FrozenBatchNorm2d,
+            "GN": lambda channels: nn.GroupNorm(32, channels),
+            # for debugging:
+            "nnSyncBN": nn.SyncBatchNorm,
+            "naiveSyncBN": NaiveSyncBatchNorm,
+        }[norm]
+    return norm
+
+
+
 
 class AllReduce(Function):
     @staticmethod
