@@ -616,7 +616,7 @@ class FastRCNNOutputs:
         elif reg_loss == "giou":
             losses_dict["loss_box_reg"] = self.compute_giou_fvcore()
         else:
-            losses_dict["loss_box_reg"] = self.smooth_l1_loss()
+            losses_dict["loss_box_reg"] = self.box_reg_loss()
 
         # return {
         #     "loss_cls": self.softmax_cross_entropy_loss(),
