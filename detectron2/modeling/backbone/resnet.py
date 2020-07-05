@@ -12,7 +12,6 @@ from detectron2.layers import (
     ModulatedDeformConv,
     ShapeSpec,
     get_norm,
-    get_norm_layer,
 )
 
 from .backbone import Backbone
@@ -182,23 +181,14 @@ class BottleneckBlock(CNNBlockBase):
         )
 
         if self.radix>1:
-            # from .splat import SplAtConv2d
-            from .split_attn import SplitAttnConv2d
-            # self.conv2 = SplAtConv2d(
-            #                 group_width, group_width, kernel_size=3,
-            #                 stride = 1 if self.avd else stride_3x3,
-            #                 padding=dilation, dilation=dilation,
-            #                 groups=cardinality, bias=False,
-            #                 radix=self.radix,
-            #                 norm=norm,
-            #              )
-            self.conv2 = SplitAttnConv2d(
+            from .splat import SplAtConv2d
+            self.conv2 = SplAtConv2d(
                             group_width, group_width, kernel_size=3,
                             stride = 1 if self.avd else stride_3x3,
                             padding=dilation, dilation=dilation,
                             groups=cardinality, bias=False,
                             radix=self.radix,
-                            norm_layer=get_norm_layer(norm),
+                            norm=norm,
                          )
         else:
             self.conv2 = Conv2d(
